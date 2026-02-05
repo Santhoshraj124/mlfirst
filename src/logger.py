@@ -1,12 +1,11 @@
 import logging
 import os
 from datetime import datetime
-import sys
-from src.exception import CustomException
 
 
 # -------- LOGGING SETUP --------
 LOG_FILE = f"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"
+
 logs_dir = os.path.join(os.getcwd(), "logs")
 os.makedirs(logs_dir, exist_ok=True)
 
@@ -19,15 +18,9 @@ logging.basicConfig(
 )
 
 
-# -------- TEST EXCEPTION --------
-try:
-    1 / 0
-except Exception as e:
-    logging.error("An error occurred", exc_info=True)
-    raise CustomException(e, sys)
-
-
+# -------- SAFE TEST BLOCK --------
 if __name__ == "__main__":
-    logging.info("Logging has started")
+    logging.info("Logger module executed directly.")
+
 
     
