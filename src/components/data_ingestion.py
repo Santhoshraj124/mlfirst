@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
+from src.components.data_transformation import DataTransformation
 from src.exception import CustomException
 from src.logger import logging
 
@@ -16,22 +17,22 @@ class DataIngestionConfig:
     test_data_path: str = os.path.join("artifacts", "test.csv")
     raw_data_path: str = os.path.join("artifacts", "data.csv")
 
-    # 🔴 Updated to match YOUR real folder name
+    # dataset path (matches your folder name)
     source_data_path: str = os.path.join("nootbook", "stud.csv")
 
 
-# ================= DATA INGESTION CLASS =================
+# ================= DATA INGESTION =================
 class DataIngestion:
     def __init__(self):
         self.ingestion_config = DataIngestionConfig()
 
     def initiate_data_ingestion(self):
-        logging.info("Entered the data ingestion method")
+        logging.info("Entered data ingestion method")
 
         try:
             # -------- READ DATASET --------
             df = pd.read_csv(self.ingestion_config.source_data_path)
-            logging.info("Dataset read successfully as DataFrame")
+            logging.info("Dataset read successfully")
 
             # -------- CREATE ARTIFACTS FOLDER --------
             os.makedirs(
@@ -41,31 +42,19 @@ class DataIngestion:
 
             # -------- SAVE RAW DATA --------
             df.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
-            logging.info("Raw data saved to artifacts folder")
+            logging.info("Raw data saved")
 
-            # -------- TRAIN TEST SPLIT --------
-            logging.info("Train-test split initiated")
-
+            # -------- TRAIN-TEST SPLIT --------
             train_set, test_set = train_test_split(
                 df,
                 test_size=0.2,
                 random_state=42
             )
 
-            # -------- SAVE SPLIT FILES --------
-            train_set.to_csv(
-                self.ingestion_config.train_data_path,
-                index=False,
-                header=True
-            )
+            train_set.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
+            test_set.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
 
-            test_set.to_csv(
-                self.ingestion_config.test_data_path,
-                index=False,
-                header=True
-            )
-
-            logging.info("Data ingestion completed successfully")
+            logging.info("Data ingestion completed")
 
             return (
                 self.ingestion_config.train_data_path,
@@ -76,14 +65,24 @@ class DataIngestion:
             raise CustomException(e, sys)
 
 
-# ================= MAIN EXECUTION =================
+# ================= MAIN =================
 if __name__ == "__main__":
-    obj = DataIngestion()
-    train_path, test_path = obj.initiate_data_ingestion()
+    ingestion = DataIngestion()
+    train_path, test_path = ingestion.initiate_data_ingestion()
 
     print("Train file path:", train_path)
     print("Test file path:", test_path)
 
+    # ---------- CALL DATA TRANSFORMATION ----------
+    data_transformation = DataTransformation()
+
+    train_arr, test_arr, preprocessor_path = (
+        data_transformation.initiate_data_transformation(train_path, test_path)
+    )
+
+    print("Train array shape:", train_arr.shape)
+    print("Test array shape:", test_arr.shape)
+    print("Preprocessor saved at:", preprocessor_path)
 
 
 
